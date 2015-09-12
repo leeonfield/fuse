@@ -1,7 +1,9 @@
-// var width = window.innerWidth;
-// var height = window.innerHeight * 0.8;
+var mapLength = 2000;
+
+
+
 var list = new Array();
-var colorList=["#FF0000","#FF7F00","#FFFF00","#00FF00","#00FFFF","#0000FF","#8B00FF"];
+var colorList = ["#FF0000", "#FF7F00", "#FFFF00", "#00FF00", "#00FFFF", "#0000FF", "#8B00FF"];
 
 // 红色 #FF0000 
 // 橙色 #FF7F00
@@ -33,15 +35,16 @@ function ListNode(color, radius, x, y) {
 
 function randomCoordinate() {
 
-	return Math.round(Math.random() * 800);
+	return Math.round(Math.random() * mapLength);
 }
 
 function randomRadius() {
 
-	return (5+Math.round(Math.random() * 4));
+	return (5 + Math.round(Math.random() * 4));
 }
-function randomColor(){
-	return Math.floor(Math.random()*7);
+
+function randomColor() {
+	return Math.floor(Math.random() * 7);
 }
 
 function getDistance(x1, y1, x2, y2) {
@@ -54,6 +57,7 @@ function getDistance(x1, y1, x2, y2) {
 function getCoordinates(e) {
 	var x = e.clientX;
 	var y = e.clientY;
+
 	player.target_x = x;
 	player.target_y = y;
 }
@@ -61,51 +65,95 @@ function getCoordinates(e) {
 
 function updata() {
 
-	var dis_x = player.target_x - player.x;
-	var dis_y = player.target_y - player.y;
+	var dis_x = player.target_x - 300;
+	var dis_y = player.target_y - 300;
 	var distance = Math.sqrt(Math.pow(dis_x, 2) + Math.pow(dis_y, 2));
 
-	if (distance >= player.speed) {
+	if (distance >= player.speed && player.x <= mapLength && player.y <= mapLength && player.x >= 0 && player.y >= 0) {
 		var mov_x = player.speed * (dis_x / distance);
 		var mov_y = player.speed * (dis_y / distance);
-		player.x += mov_x;
-		player.y += mov_y;
-	} else {
-		player.x = player.target_x;
-		player.y = player.target_y;
+
+		if ((player.x + mov_x) > mapLength) {
+			player.x = mapLength - player.radius;
+			player.target_x = 300;
+		} else if ((player.x + mov_x) < 0) {
+			player.x = player.radius;
+			player.target_x = 300;
+		} else {
+			player.x += mov_x;
+		}
+		if ((player.y + mov_y) > mapLength) {
+			player.y = mapLength - player.radius;
+			player.target_y = 300;
+		} else if ((player.y + mov_y) < 0) {
+			player.y = player.radius;
+			player.target_y = 300;
+		} else {
+			player.y += mov_y;
+
+		}
+
+
 	}
 
-	for (var i = 50 - list.length; i >= 0; i--) {
+
+	for (var i = 300 - list.length; i >= 0; i--) {
+
 		var x = new ListNode(colorList[randomColor()], randomRadius(), randomCoordinate(), randomCoordinate());
 		list.push(x);
 	}
+
 }
 
 function draw(context) {
 	context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
-	for (var i = 0; i < list.length; i++) {
+	for (var i = player.speed; i < 500; i += 60) {
+		var x = i +
 
-		if (getDistance(player.x, player.y, list[i].x, list[i].y) <= player.radius) {
-			player.radius+=0.5;
-			player.color=list[i].color;
-
-			var x = new ListNode(colorList[randomColor()], randomRadius(), randomCoordinate(), randomCoordinate());
-			list.splice(i, 1, x);
-
-		}
-
-
+			context.beginPath();
+		context.lineTo(i, 0);
+		context.lineTo(i, 500);
+		context.strokeStyle = "gray";
+		context.stroke();
 
 		context.beginPath();
-		context.fillStyle = list[i].color;
-		context.arc(list[i].x, list[i].y, list[i].radius, 0, Math.PI * 2);
-		context.fill();
+		context.lineTo(0, i);
+		context.lineTo(500, i);
+		context.strokeStyle = "gray";
+		context.stroke();
 	}
 
+
+
+	for (var i = 0; i < list.length; i++) {
+
+
+		//判断接触
+		if (getDistance(player.x, player.y, list[i].x, list[i].y) <= player.radius) {
+			player.radius += 0.5;
+			player.score += 1;
+			player.color = list[i].color;
+			var x = new ListNode(colorList[randomColor()], randomRadius(), randomCoordinate(), randomCoordinate());
+			list.splice(i, 1, x);
+		}
+
+		//以用户的点作参考，绘制用户300半径以内的点
+		if (getDistance(list[i].x, list[i].y, player.x, player.y) < 300) {
+
+			context.beginPath();
+			context.fillStyle = list[i].color;
+			context.arc(list[i].x - player.x + 300, list[i].y - player.y + 300, list[i].radius, 0, Math.PI * 2);
+			context.fill();
+		}
+	}
+
+
+
+	//把用户的点绘制在（300,300）
 	context.beginPath();
 	context.fillStyle = player.color;
-	context.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+	context.arc(300, 300, player.radius, 0, Math.PI * 2);
 	context.fill();
 
 	document.getElementById("status").innerHTML = " Score:" + player.score + "</br>" + " Range:.....";
@@ -116,13 +164,13 @@ var i = 0;
 
 function func() {
 	var c = document.getElementById("mycanvas");
-	c.width = 800;
-	c.height = 800;
+	c.width = 500;
+	c.height = 500;
 	var cxt = c.getContext("2d");
 
 	updata();
 	draw(cxt);
-
+	console.log(player.x + "        :    " + player.y);
 	requestAnimationFrame(func);
 
 }
