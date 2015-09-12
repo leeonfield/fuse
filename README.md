@@ -1,2 +1,7 @@
 # fuse
-this is a web game like agar.io by js+html
+##intro
+agar.io is a very funny game.So i try to make one.
+##tools
+html+javascript+css
+
+
