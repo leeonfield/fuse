@@ -158,7 +158,7 @@ function draw(context) {
 	context.fillStyle = player.color;
 	context.arc(300, 300, player.radius, 0, Math.PI * 2);
 	context.fill();
-	document.getElementById("status").innerHTML = " Score:" + player.score + "</br>" + " Range:.....";
+	//document.getElementById("status").innerHTML = " Score:" + player.score + "</br>" + " Range:.....";
 }
 
 var i = 0;
